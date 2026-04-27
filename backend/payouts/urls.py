@@ -1,5 +1,6 @@
 from django.urls import path
+from .views import PayoutRequestView
 
 urlpatterns = [
-    # Payout API routes will be added here
+    path('payouts', PayoutRequestView.as_view(), name='payout-request'),
 ]
