@@ -1,9 +1,9 @@
 import './App.css'
+import Dashboard from './Dashboard'
 
 function App() {
-
   return (
-    <h1 className='text-3xl font-bold pt-2'>Welcome to PlayTo</h1>
+    <Dashboard />
   )
 }
 
