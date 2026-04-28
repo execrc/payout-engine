@@ -48,6 +48,20 @@ MIDDLEWARE = [
 
 CORS_ALLOW_ALL_ORIGINS = True  # Setup for initial dev
 
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+    "idempotency-key",
+    "x-merchant-id",
+]
+
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [

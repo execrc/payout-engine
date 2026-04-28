@@ -30,7 +30,7 @@ class Payout(models.Model):
     merchant = models.ForeignKey(Merchant, related_name='payouts', on_delete=models.PROTECT)
     amount_paise = models.BigIntegerField()
     bank_account_id = models.CharField(max_length=255)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING, db_index=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -43,10 +43,20 @@ class LedgerEntry(models.Model):
     By maintaining this ledger table, we can easily enforce their invariant: 
     "The sum of credits minus debits must always equal the displayed balance"
     """
+    ENTRY_CREDIT = 'customer_payment_simulation'
+    ENTRY_HOLD = 'payout_hold'
+    ENTRY_REFUND = 'payout_refund'
+
+    ENTRY_TYPE_CHOICES = [
+        (ENTRY_CREDIT, 'Customer Payment Simulation'),
+        (ENTRY_HOLD, 'Payout Hold'),
+        (ENTRY_REFUND, 'Payout Refund'),
+    ]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    merchant = models.ForeignKey(Merchant, related_name='ledger_entries', on_delete=models.PROTECT)
+    merchant = models.ForeignKey(Merchant, related_name='ledger', on_delete=models.PROTECT)
     amount_paise = models.BigIntegerField()
-    entry_type = models.CharField(max_length=50) # Examples: 'customer_payment', 'payout_hold', 'payout_refund'
+    entry_type = models.CharField(max_length=50, choices=ENTRY_TYPE_CHOICES)
     
     payout = models.ForeignKey(Payout, on_delete=models.SET_NULL, null=True, blank=True)
     

@@ -5,19 +5,19 @@ from django.db import transaction
 from django.db.models import F
 from .models import Payout, Merchant, LedgerEntry
 
-def call_bank_simulation():
+def simulate_bank_api():
     """
     Simulates external bank API behavior cleanly:
     - 70% success
     - 20% fail
     - 10% hang
     """
-    roll = random.randint(1, 100)
+    outcome = random.randint(1, 100)
     
-    if roll <= 10:
+    if outcome <= 10:
         time.sleep(31) # Simulates hanging
         raise TimeoutError("Bank API Hung for >30s")
-    elif roll <= 30: # 11-30
+    elif outcome <= 30: # 11-30
         return False # Failed
     else: # 31-100
         return True # Success
@@ -41,12 +41,13 @@ def process_payout(payout_id, attempt=1):
         payout.save(update_fields=['status', 'updated_at'])
 
     try:
-        success = call_bank_simulation()
+        success = simulate_bank_api()
     except TimeoutError:
         if attempt < MAX_ATTEMPTS:
             # Exponential Backoff Retry (e.g. 2s -> 4s)
             delay_seconds = 2 ** attempt
             process_payout.schedule(args=(payout_id, attempt + 1), delay=delay_seconds)
+            # Payout intentionally stays in processing until retry resolves
             return
         else:
             # Max retries exhausted, we must cleanly execute the atomic fail/refund operation
